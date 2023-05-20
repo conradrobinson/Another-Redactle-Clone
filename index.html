@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redactle</title>
+</head>
+<body>
+    <div id="header"></div>
+    <div id="content">
+        
+        <div id="article"></div>
+        <div id="guesses">
+            <div id="attempts">
+                <div id="table-container">
+                    <table id="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Guess</th>
+                                <th>Hits</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <form id="input">
+                <input type="text" id="input-box" placeholder="Guess...">
+                <button type="submit" id="submit-box">Try</button>
+            </form>
+        </div>
+    </div>
+</body>
+<script src="parser.js"></script>
+<script src="unredactedList.js"></script>
+<script src="article.js"></script>
+<script src="guess.js"></script>
+</html>
