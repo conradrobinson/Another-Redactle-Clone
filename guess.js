@@ -46,6 +46,8 @@ function guessSubmission() {
     //we are only here if it is not in the list already
     guesses.push({guess: inputField.value.toLowerCase(), occurences: 0})
     recalculateRedacted(inputField.value.toLowerCase())
+    storage.setGuesses(guesses)
+    storage.setPageID(parser.pageID)
     inputField.value = ""
     makeTable(guesses.length-1)
     let rows = document.getElementsByTagName("tr")

@@ -6,6 +6,8 @@ class Parser {
         this.tree = {tag: "root", content: [], isOpen: true}
         this.content = []
         this.title = ""
+        this.pageID = ""
+        this.mappedChars = [["&lt;", "<"], ["&gt;", ">"], ["&#160;", " "]]
     }
 
     traverseTree(tree, tags) { //tree traversal order needs to be in (middle - cannot have text so doesn't matter?) left right
@@ -44,7 +46,7 @@ class Parser {
                 textChildren += this.findTextChildren(node.content[i])
             }
         }
-        textChildren = textChildren.replace("\n", "")
+        textChildren = textChildren.replaceAll("\n", "")
         return textChildren
     }
 
@@ -103,6 +105,9 @@ class Parser {
                 if (tagIsOpen) {
                     let node = this.traverseTreeForOpen(this.tree)
                     node.content.push({tag: tagContents, content: [], isOpen: true})
+                    if ("area, base, br, col, embed, hr, img, input, link, meta, source, track, wbr".split(", ").includes(tagContents)) {
+                        node.content[node.content.length-1].isOpen = false;
+                    }
                     
                 } else {
                     this.traverseTreeForOpen(this.tree).isOpen = false;
@@ -137,24 +142,34 @@ class Parser {
     }
 
     reqArticle(pageID) {
-        let x = fetch(`https://en.wikipedia.org/w/api.php?action=parse&format=json&pageid=${pageID}&prop=subtitle%7Ctext%7Cdisplaytitle&formatversion=2&origin=*`, {mode: 'cors'})
+        this.pageID = pageID
+        let x = fetch(`https://en.wikipedia.org/w/api.php?action=parse&format=json&pageid=${this.pageID}&prop=subtitle%7Ctext%7Cdisplaytitle&formatversion=2&origin=*`, {mode: 'cors'})
         x.then((data) => data.json()).then((data) => {this.handleData(data)})
     }
     handleData(res) {
         this.title = res.parse.title
         this.text = res.parse.text
+        for (let i = 0; i < this.mappedChars.length; i++) {
+            this.text = this.text.replaceAll(this.mappedChars[i][0], this.mappedChars[i][1])
+        }
+        this.text = this.text.replace(/<!--[\s\S]*?-->/g, '');
+        console.log(this.text)
         this.generateSyntaxTree()
-        console.log(this.tree)
+        console.log(JSON.stringify(this.tree, undefined, 1))
         this.findContent()
         this.content = [{tag: "h1", content: this.title}].concat(this.content)
         text = this.content;
-
+        if (this.pageID == storage.getPageID()) { //the current article's guesses is in storage
+            guesses = storage.getGuesses() //load the guesses
+            makeTable(guesses.length-1)
+        }
         displayArticle()
+        checkWin()
+
     }
 }
 
 parser = new Parser()
-parser.reqArticle("59892")
 
 
 

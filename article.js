@@ -3,11 +3,19 @@ function displayArticle() {
         calculateRedacted()
 }
 
-
+function getAllElements(classname) {
+    return Array.from(document.getElementsByClassName(classname)).concat(Array.from(document.getElementsByClassName(`-${classname}`)))
+}
+function capitaliseFirstLetter(word) {
+    if (word.substring(0, 1) == "-") {
+        return word.substring(1, 2).toUpperCase() + word.substring(2, word.length)
+    }
+    return word;
+}
 function recalculateRedacted(guess) {
 
 
-    let elements = document.getElementsByClassName(guess)
+    let elements = getAllElements(guess)
     if (elements.length == 0) {
         return
     }
@@ -15,7 +23,7 @@ function recalculateRedacted(guess) {
     if (elements[0].classList.contains("hidden-element")) {
 
         //clear all highlighting from last word
-        let previouslyHighlighted = document.getElementsByClassName(lastWordHighlighted)
+        let previouslyHighlighted = getAllElements(lastWordHighlighted)
         for (let i = 0; i < previouslyHighlighted.length; i++) {
             previouslyHighlighted[i].classList.remove("article-word-highlighted")
             if (previouslyHighlighted[i].classList.contains("article-word-double-highlighted")) {
@@ -25,7 +33,7 @@ function recalculateRedacted(guess) {
 
         for (let i = 0; i < elements.length; i++) {
             elements[i].classList.remove("hidden-element") //remove the hidden tag
-            elements[i].textContent = guess
+            elements[i].textContent = capitaliseFirstLetter(elements[i].className.split(" ")[0])
             elements[i].classList.add("article-word-highlighted")
         }
         guesses[guesses.length-1].occurences = elements.length
@@ -50,7 +58,7 @@ function recalculateRedacted(guess) {
         } else { //we switched to this
 
                 //clear all highlighting from last word
-                let previouslyHighlighted = document.getElementsByClassName(lastWordHighlighted)
+                let previouslyHighlighted = getAllElements(lastWordHighlighted)
                 for (let i = 0; i < previouslyHighlighted.length; i++) {
                     previouslyHighlighted[i].classList.remove("article-word-highlighted")
                     if (previouslyHighlighted[i].classList.contains("article-word-double-highlighted")) {
@@ -66,6 +74,12 @@ function recalculateRedacted(guess) {
             lastWordHighlighted = guess
         }
     }
+
+    checkWin()
+}
+
+function checkWin() {
+    //check for win condition
     let titleElements = document.getElementsByClassName("title-element")
     let anyHidden = false;
     for (let i = 0; i < titleElements.length; i++) {
@@ -78,11 +92,11 @@ function recalculateRedacted(guess) {
         //you have won so reveal all the words
         let hiddenElements = document.getElementsByClassName("hidden-element")
         while (hiddenElements.length > 0) {
-            hiddenElements[0].textContent = hiddenElements[0].className.split(" ")[0]
+            hiddenElements[0].textContent = capitaliseFirstLetter(hiddenElements[0].className.split(" ")[0])
             hiddenElements[0].classList.remove("hidden-element")
         }
     }
-}
+} 
 
 
 function calculateRedacted() {
@@ -112,29 +126,57 @@ function calculateRedacted() {
                 if (content[j].match(includedCharsPattern)) { //the character is alphanumeric
                     startIndex = j
                     startDefined = true
+                    //adds the punctuation
                     let newSpan = document.createElement("span")
                     newSpan.textContent = content.substring(endIndex, startIndex)
                     textElement.appendChild(newSpan)
                 }
-            }
-            if (startDefined) {
-                
-                if (!content[j].match(includedCharsPattern)) {
-                    endIndex = j
-                    endDefined = true
-                } else {
-                    if (j == content.length - 1) {
-                        endIndex = j+1;
-                        endDefined = true
-                    }
+                if (j == content.length - 1) {
+                    let newSpan = document.createElement("span")
+                    newSpan.textContent = content.substring(endIndex, content.length)
+                    textElement.appendChild(newSpan)
                 }
-                
             }
+
+            if (startDefined) {
+                if (j < content.length - 1) { //we have not reached the last character
+                if (!content[j + 1].match(includedCharsPattern)) { //if the next character is not alphanumeric
+                    endIndex = j + 1
+                    endDefined = true
+                }
+                } else {
+                    //this is the last character stupid edge case
+                    endDefined = true;
+                    endIndex = j + 1;
+                }
+            }
+
             if (startDefined && endDefined) {
                 endDefined = false;
                 startDefined = false
                 word = content.substring(startIndex, endIndex)
 
+                let foundInGuesses = -1;
+                for (let i = 0; i < guesses.length; i++) {
+                    if (guesses[i].guess == word.toLowerCase()) {
+                        foundInGuesses = i;
+                        break
+                    } 
+                }
+                if (foundInGuesses != -1) {
+                    let newSpan = document.createElement("span")
+                    newSpan.textContent = word
+                    if (word.substring(0, 1) == word.substring(0, 1).toUpperCase()) {
+                        newSpan.classList.add(`-${word.toLowerCase()}`)
+                    } else {
+                        newSpan.classList.add(word)
+                    }
+                    if (tag == "h1") {
+                        newSpan.classList.add("title-element")
+                    }
+                    textElement.appendChild(newSpan)
+                    continue;
+                }
                 if (unredactedWords.includes(word.toLowerCase())) { //the word should not be redacted in the first place
                     let newSpan = document.createElement("span")
                     newSpan.textContent = word
@@ -143,7 +185,11 @@ function calculateRedacted() {
                 }
                 //we can only get to here if the word is not in guesses and is not in the default unredacted list
                 let newSpan = document.createElement("span")
-                newSpan.classList.add(word.toLowerCase())
+                if (word.substring(0, 1) == word.substring(0, 1).toUpperCase()) {
+                    newSpan.classList.add(`-${word.toLowerCase()}`)
+                } else {
+                    newSpan.classList.add(word)
+                }
                 newSpan.classList.add("hidden-element")
                 if (tag == "h1") {
                     newSpan.classList.add("title-element")
