@@ -21,6 +21,14 @@ function guessSubmission() {
     if (inputField.value == "") {
         return;
     }
+    //see if the word should not be redacted
+    for (let i = 0; i < unredactedWords.length; i++) {
+        if (inputField.value == unredactedWords[i]) {
+            inputField.value = ""
+            return;
+        }
+    }
+    //search the list
     let guessIndex = -1
     for (let i = 0; i < guesses.length; i++) {
         if (guesses[i].guess == inputField.value.toLowerCase()) {
@@ -28,6 +36,7 @@ function guessSubmission() {
             break;
         }
     }
+
     if (guessIndex != -1) {
         //highlight it in the list
         //dont add it

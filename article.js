@@ -4,16 +4,26 @@ function displayArticle() {
 }
 
 function getAllElements(classname) {
-    return Array.from(document.getElementsByClassName(classname)).concat(Array.from(document.getElementsByClassName(`-${classname}`)))
+    return Array.from(document.getElementsByClassName(classname))
 }
 function capitaliseFirstLetter(word) {
-    if (word.substring(0, 1) == "-") {
-        return word.substring(1, 2).toUpperCase() + word.substring(2, word.length)
+    if (!word.includes("-")) {
+        return word;
     }
-    return word;
+    let out = ""
+    for (i = 0; i < word.length; i++) {
+        let char = word.charAt(i)
+        if (char == "-") {
+            out += word.charAt(i+1).toUpperCase()
+            i++
+        } else {
+            out += char
+        }
+    }
+    return out;
 }
-function recalculateRedacted(guess) {
 
+function recalculateRedacted(guess) {
 
     let elements = getAllElements(guess)
     if (elements.length == 0) {
@@ -90,14 +100,37 @@ function checkWin() {
     }
     if (!anyHidden) {
         //you have won so reveal all the words
-        let hiddenElements = document.getElementsByClassName("hidden-element")
-        while (hiddenElements.length > 0) {
-            hiddenElements[0].textContent = capitaliseFirstLetter(hiddenElements[0].className.split(" ")[0])
-            hiddenElements[0].classList.remove("hidden-element")
+        let textHolders = document.getElementById("article").children;
+        for (let i = 0; i < textHolders.length; i++) {
+            textHolders[i].replaceChildren()
+            textHolders[i].textContent = text[i].content;
         }
+        //put the article link at the top here
+        let articleElement = document.getElementById("article")
+        let linkText = document.createElement("p")
+        linkText.textContent = `This is a link to `
+        let link = document.createElement("a")
+        link.textContent = `the original wikipedia article.`
+        link.href = `http://en.wikipedia.org/?curid=${parser.pageID}`
+        linkText.appendChild(link)
+        articleElement.prepend(linkText)
+        scroll(linkText)
+        //create the dialogue box
+        createDialogue()
     }
 } 
-
+function setCapitalization(word) {
+    let out = ""
+    for (let i = 0; i < word.length; i++) {
+        let char = word.charAt(i)
+        if (char == char.toUpperCase()) {
+            out += "-" + char
+        } else {
+            out += char;
+        }
+    }
+    return out;
+}
 
 function calculateRedacted() {
     for (let i = 0; i < text.length; i++) {
@@ -107,7 +140,8 @@ function calculateRedacted() {
         let endIndex = 0
         let startDefined = false;
         let endDefined = false
-        let includedCharsPattern = /^[a-z0-9$é]+$/i
+        //let includedCharsPattern = /^[a-z0-9$é]+$/i
+        let includedCharsPattern = /\p{Alphabetic}|\p{N}/gu
         let articleElement = document.getElementById("article")
         let textElement = undefined;
         if (tag == "p") {
@@ -123,7 +157,7 @@ function calculateRedacted() {
         //for every child
         for (let j = 0; j < content.length; j++) { 
             if (!startDefined) { //we have not yet found a word so the next letter found is the start index
-                if (content[j].match(includedCharsPattern)) { //the character is alphanumeric
+                if (includedCharsPattern.test(content[j])) { //the character is alphanumeric
                     startIndex = j
                     startDefined = true
                     //adds the punctuation
@@ -163,11 +197,11 @@ function calculateRedacted() {
                         break
                     } 
                 }
-                if (foundInGuesses != -1) {
+                if (foundInGuesses != -1) { //it has been guessed before - saved to local storage on page load
                     let newSpan = document.createElement("span")
                     newSpan.textContent = word
                     if (word.substring(0, 1) == word.substring(0, 1).toUpperCase()) {
-                        newSpan.classList.add(`-${word.toLowerCase()}`)
+                        newSpan.classList.add(setCapitalization(word).toLowerCase())
                     } else {
                         newSpan.classList.add(word)
                     }
@@ -185,11 +219,12 @@ function calculateRedacted() {
                 }
                 //we can only get to here if the word is not in guesses and is not in the default unredacted list
                 let newSpan = document.createElement("span")
-                if (word.substring(0, 1) == word.substring(0, 1).toUpperCase()) {
-                    newSpan.classList.add(`-${word.toLowerCase()}`)
-                } else {
-                    newSpan.classList.add(word)
+                let capsed = setCapitalization(word).toLowerCase()
+                newSpan.classList.add(capsed)
+                if (capsed != word.toLowerCase()) {
+                    newSpan.classList.add(word.toLowerCase())
                 }
+
                 newSpan.classList.add("hidden-element")
                 if (tag == "h1") {
                     newSpan.classList.add("title-element")

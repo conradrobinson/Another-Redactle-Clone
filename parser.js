@@ -153,9 +153,7 @@ class Parser {
             this.text = this.text.replaceAll(this.mappedChars[i][0], this.mappedChars[i][1])
         }
         this.text = this.text.replace(/<!--[\s\S]*?-->/g, '');
-        console.log(this.text)
         this.generateSyntaxTree()
-        console.log(JSON.stringify(this.tree, undefined, 1))
         this.findContent()
         this.content = [{tag: "h1", content: this.title}].concat(this.content)
         text = this.content;

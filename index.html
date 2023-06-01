@@ -8,10 +8,12 @@
     <title>Redactle</title>
 </head>
 <body>
-    <div id="header"></div>
+    <div id="header">
+    </div>
     <div id="content">
-        
-        <div id="article"></div>
+        <div id="article">
+
+        </div>
         <div id="guesses">
             <div id="attempts">
                 <div id="table-container">
@@ -35,12 +37,20 @@
             </form>
         </div>
     </div>
+    <dialog id="modal">
+        <h3 id="modal-title">Congratulations!</h3> <p id="modal-close">&#x2716;</p>
+        <p id="modal-text">You have solved today's Conradactle in x Guesses!</p>
+        <p id="modal-share-text">Click to share your result</p>
+        <button id="modal-share">Share</button>
+    </dialog>
 </body>
 <script src="storage.js"></script>
+<script src="header.js"></script>
 <script src="parser.js"></script>
 <script src="pageIDs.js"></script>
 <script src="pageIDList.js"></script>
 <script src="unredactedList.js"></script>
 <script src="article.js"></script>
 <script src="guess.js"></script>
+<script src="winDialogue.js"></script>
 </html>
