@@ -157,8 +157,8 @@ class Parser {
         this.findContent()
         this.content = [{tag: "h1", content: this.title}].concat(this.content)
         text = this.content;
-        if (this.pageID == storage.getPageID()) { //the current article's guesses is in storage
-            guesses = storage.getGuesses() //load the guesses
+        if (storage.hasPageID(this.pageID)) { //the current article's guesses is in storage
+            guesses = storage.getGuesses(this.pageID) //load the guesses
             makeTable(guesses.length-1)
         }
         displayArticle()

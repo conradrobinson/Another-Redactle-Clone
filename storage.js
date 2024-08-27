@@ -3,17 +3,43 @@ class Storage {
         this.storage = window.localStorage
     }
 
-    setGuesses(guesses) {
+    setData(guesses) {
         this.storage.setItem("guesses", JSON.stringify(guesses))
     }
-    getGuesses() {
-        return JSON.parse(this.storage.getItem("guesses"))
+    getData() {
+        let data = JSON.parse(this.storage.getItem("guesses"))
+        if (data != null && Array.isArray(data)) {
+            this.setData({})
+            return {}
+        }
+        return data
     }
-    setPageID(pageID) {
-        this.storage.setItem("pageID", pageID)
+    // setPageID(pageID) {
+    //     this.storage.setItem("pageID", pageID)
+    // }
+    // getPageID() {
+    //     return this.storage.getItem("pageID")
+    // }
+    hasPageID(id) {
+        let data = this.getData()
+        if (data == null) {
+            return false
+        }
+        if (id in data) {
+            return true
+        }
+        return false
     }
-    getPageID() {
-        return this.storage.getItem("pageID")
+    getGuesses(pageID) {
+        return this.getData()[pageID]
+    }
+    setGuesses(pageID, guesses) {
+        let data = this.getData()
+        if (data == null) {
+            data = {}
+        }
+        data[pageID] = guesses
+        this.setData(data)
     }
 
 }
