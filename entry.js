@@ -47,5 +47,5 @@ function parseQueryString() {
     }
 }
 function replaceHistory() {
-    window.history.replaceState(null, "", "/?num=" + (daysDifference+1).toString())
+    window.history.replaceState(null, "", window.location.pathname + "?num=" + (daysDifference+1).toString())
 }
